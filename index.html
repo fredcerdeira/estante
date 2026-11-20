@@ -111,6 +111,22 @@
     cursor: pointer;
   }
   .filters button.active { background: var(--green); border-color: var(--green); color: var(--panel); }
+  .filters button[data-f="lido"]::before,
+  .filters button[data-f="naolido"]::before,
+  .filters button[data-f="acomprar"]::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: -1px;
+    border: 2px solid var(--panel);
+    box-sizing: content-box;
+  }
+  .filters button[data-f="lido"]::before { background: #82aa0e; }
+  .filters button[data-f="naolido"]::before { background: var(--brass-soft); }
+  .filters button[data-f="acomprar"]::before { background: #df1579; }
 
   .add-btn {
     background: var(--brass);

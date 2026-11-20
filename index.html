@@ -616,7 +616,7 @@
       const el = document.createElement('div');
       el.className = 'book';
       const interior = l.imagem
-        ? `<img src="${escHtml(capaSrc(l))}" alt="Capa de ${escHtml(l.titulo)}" loading="lazy" data-title="${escHtml(l.titulo)}">`
+        ? `<img src="${escHtml(capaSrc(l))}" alt="Capa de ${escHtml(l.titulo)}" loading="lazy" referrerpolicy="no-referrer" data-title="${escHtml(l.titulo)}">`
         : `<div class="fallback">${escHtml(l.titulo)}</div>`;
       el.innerHTML = `
         <div class="cover ${lido ? 'lido' : ''}">

@@ -1,0 +1,128 @@
+[
+  {
+    "id": "barriga-de-aluguer",
+    "titulo": "Barriga de Aluguer",
+    "autor": "Freida McFadden",
+    "estado": "lido",
+    "imagem": "capas/barriga-de-aluguer.jpg"
+  },
+  {
+    "id": "a-criada-esta-a-ver",
+    "titulo": "A Criada Está a Ver",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "a-inquilina",
+    "titulo": "A Inquilina",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "a-intrusa",
+    "titulo": "A Intrusa",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "a-mulher-no-andar-de-cima",
+    "titulo": "A Mulher no Andar de Cima",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "a-porta-trancada",
+    "titulo": "A Porta Trancada",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "a-professora",
+    "titulo": "A Professora",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "ala-d",
+    "titulo": "Ala D",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "nao-incomodar",
+    "titulo": "Não Incomodar",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "nunca-mintas",
+    "titulo": "Nunca Mintas",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "o-acidente",
+    "titulo": "O Acidente",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "o-casamento-da-criada",
+    "titulo": "O Casamento da Criada",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "o-escritorio",
+    "titulo": "O Escritório",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "o-namorado",
+    "titulo": "O Namorado",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "o-recluso",
+    "titulo": "O Recluso",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "o-segredo-da-criada",
+    "titulo": "O Segredo da Criada",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "querida-debbie",
+    "titulo": "Querida Debbie",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  },
+  {
+    "id": "a-criada",
+    "titulo": "A Criada",
+    "autor": "Freida McFadden",
+    "estado": "naolido",
+    "imagem": ""
+  }
+]

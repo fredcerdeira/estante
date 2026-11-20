@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A Minha Estante</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+  :root {
+    --bg: #EFE7D8;
+    --panel: #FBF8F1;
+    --ink: #24261F;
+    --ink-soft: #5B5C50;
+    --green: #2B4736;
+    --green-deep: #1B2E24;
+    --brass: #A9762E;
+    --brass-soft: #D7B978;
+    --line: rgba(36,38,31,0.14);
+    --danger: #9B3B32;
+    --radius: 4px;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171812;
+      --panel: #201F1A;
+      --ink: #EDE8DB;
+      --ink-soft: #A9A493;
+      --green: #6E9A80;
+      --green-deep: #4C7360;
+      --brass: #D7B978;
+      --brass-soft: #8A6A31;
+      --line: rgba(237,232,219,0.14);
+      --danger: #D97B6F;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171812;
+    --panel: #201F1A;
+    --ink: #EDE8DB;
+    --ink-soft: #A9A493;
+    --green: #6E9A80;
+    --green-deep: #4C7360;
+    --brass: #D7B978;
+    --brass-soft: #8A6A31;
+    --line: rgba(237,232,219,0.14);
+    --danger: #D97B6F;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    min-height: 100%;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; }
+  header { margin-bottom: 32px; }
+  header .label { font-size: 13px; letter-spacing: 0.02em; color: var(--brass); font-weight: 600; }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(32px, 5vw, 44px);
+    margin: 4px 0 8px;
+    color: var(--green-deep);
+  }
+  @media (prefers-color-scheme: dark) { h1 { color: var(--green); } }
+  :root[data-theme="dark"] h1 { color: var(--green); }
+  header p { color: var(--ink-soft); margin: 0; max-width: 520px; line-height: 1.5; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .search {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--panel);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 14px;
+  }
+  .filters { display: flex; gap: 6px; }
+  .filters button {
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-soft);
+    padding: 9px 14px;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .filters button.active { background: var(--green); border-color: var(--green); color: var(--panel); }
+
+  .add-btn {
+    background: var(--brass);
+    color: var(--panel);
+    border: none;
+    padding: 10px 18px;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .add-btn:hover { background: var(--brass-soft); }
+
+  .grid {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+  }
+  .book {
+    display: flex;
+    flex-direction: column;
+    cursor: default;
+  }
+  .cover {
+    aspect-ratio: 2/3;
+    width: 100%;
+    background: var(--green);
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line);
+  }
+  .cover.lido { border: 5px solid color-mix(in srgb, var(--green) 45%, white); }
+  .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cover .fallback {
+    font-family: 'Fraunces', serif;
+    color: var(--panel);
+    font-size: 13px;
+    padding: 10px;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .status-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--brass-soft);
+    border: 2px solid var(--panel);
+  }
+  .status-dot.lido { background: var(--green); }
+  .book h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 15px;
+    margin: 10px 0 2px;
+    line-height: 1.3;
+  }
+  .book .autor { font-size: 12px; color: var(--ink-soft); margin: 0 0 8px; }
+  .book-actions { display: flex; gap: 6px; margin-top: auto; }
+  .book-actions button {
+    flex: 1;
+    font-family: inherit;
+    font-size: 11px;
+    padding: 6px 4px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .book-actions button.toggle.lido { border-color: var(--green); color: var(--green); }
+  .book-actions button.del:hover { border-color: var(--danger); color: var(--danger); }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 32px;
+  }
+  .pagination button {
+    min-width: 34px;
+    padding: 7px 10px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-soft);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .pagination button.active { background: var(--green); border-color: var(--green); color: var(--panel); }
+  .pagination button:disabled { opacity: 0.4; cursor: default; }
+  .pagination .dots { color: var(--ink-soft); padding: 0 2px; }
+
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--ink-soft);
+  }
+  .empty p { font-family: 'Fraunces', serif; font-size: 18px; margin: 0; }
+
+  .modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(23,24,18,0.5);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 10;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--panel);
+    border-radius: var(--radius);
+    padding: 28px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h2 { font-family: 'Fraunces', serif; font-size: 22px; margin: 0 0 18px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; color: var(--ink-soft); margin-bottom: 5px; }
+  .field input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 14px;
+  }
+  .upload-row { display: flex; gap: 12px; align-items: center; }
+  .upload-preview {
+    width: 64px;
+    height: 96px;
+    flex-shrink: 0;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-align: center;
+    overflow: hidden;
+  }
+  .upload-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .upload-btns { display: flex; flex-direction: column; gap: 6px; }
+  .btn-upload {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    font-size: 13px;
+    cursor: pointer;
+    text-align: center;
+  }
+  .btn-upload:hover { border-color: var(--brass); color: var(--brass); }
+  .btn-remove-img {
+    font-family: inherit;
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--danger);
+    cursor: pointer;
+  }
+  .toggle-row { display: flex; gap: 8px; }
+  .toggle-row button {
+    flex: 1;
+    padding: 10px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-soft);
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .toggle-row button.sel { background: var(--green); border-color: var(--green); color: var(--panel); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-actions button {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--brass); border: none; color: var(--panel); font-weight: 600; flex: 1; }
+  .btn-secondary { background: transparent; border: 1px solid var(--line); color: var(--ink-soft); }
+  .btn-delete { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+
+  .hidden { display: none !important; }
+  footer { margin-top: 56px; text-align: center; font-size: 12px; color: var(--ink-soft); }
+  footer button {
+    background: none; border: none; color: var(--ink-soft); font-family: inherit;
+    font-size: 12px; cursor: pointer; text-decoration: underline; padding: 4px 8px;
+  }
+  .admin-badge {
+    display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+    color: var(--panel); background: var(--brass); padding: 3px 8px; border-radius: var(--radius);
+    margin-left: 8px; vertical-align: middle;
+  }
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+    background: var(--green-deep); color: #fff; padding: 10px 16px; border-radius: var(--radius);
+    font-size: 13px; z-index: 20; max-width: calc(100% - 32px); text-align: center;
+  }
+  .toast.error { background: var(--danger); }
+  .hint { font-size: 12px; color: var(--ink-soft); line-height: 1.5; margin: 0 0 14px; }
+  .hint a { color: var(--brass); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="label">Catálogo pessoal</div>
+    <h1>A Minha Estante<span id="adminBadge" class="admin-badge hidden">Admin</span></h1>
+    <p>Os livros que tenho em casa, com autor, capa e se já os li.</p>
+  </header>
+
+  <div class="toolbar">
+    <input class="search" id="search" type="text" placeholder="Procurar por título ou autor…">
+    <div class="filters">
+      <button class="active" data-f="todos">Todos</button>
+      <button data-f="lido">Lidos</button>
+      <button data-f="naolido">Não lidos</button>
+    </div>
+    <button class="add-btn hidden" id="openAdd">+ Adicionar livro</button>
+  </div>
+
+  <div id="grid" class="grid"></div>
+  <div id="empty" class="empty hidden"><p></p></div>
+  <div id="pagination" class="pagination"></div>
+
+  <footer>
+    <button id="adminToggle">Admin</button>
+  </footer>
+</div>
+
+<!-- Modal: livro -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h2 id="modalTitle">Adicionar livro</h2>
+    <div class="field">
+      <label for="fTitulo">Título</label>
+      <input id="fTitulo" type="text" placeholder="Ex: Os Maias">
+    </div>
+    <div class="field">
+      <label for="fAutor">Autor</label>
+      <input id="fAutor" type="text" placeholder="Ex: Eça de Queirós">
+    </div>
+    <div class="field">
+      <label>Imagem da capa (opcional)</label>
+      <div class="upload-row">
+        <div class="upload-preview" id="uploadPreview">Sem imagem</div>
+        <div class="upload-btns">
+          <label class="btn-upload" for="fImagemFile">Escolher imagem</label>
+          <input id="fImagemFile" type="file" accept="image/*" style="display:none;">
+          <button type="button" class="btn-remove-img hidden" id="removeImgBtn">Remover</button>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Estado</label>
+      <div class="toggle-row">
+        <button type="button" id="btnNaoLido" class="sel">Não lido</button>
+        <button type="button" id="btnLido">Lido</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelBtn">Cancelar</button>
+      <button class="btn-delete hidden" id="deleteBtn">Eliminar</button>
+      <button class="btn-primary" id="saveBtn">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: login admin -->
+<div class="modal-bg" id="loginBg">
+  <div class="modal">
+    <h2>Entrar como admin</h2>
+    <p class="hint">Cola um token do GitHub com permissão <strong>Contents: Read and write</strong> só para este repositório (Settings → Developer settings → Fine-grained tokens). O token fica guardado apenas neste navegador.</p>
+    <div class="field">
+      <label for="fRepo">Repositório (dono/nome)</label>
+      <input id="fRepo" type="text" placeholder="utilizador/minha-estante" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="fToken">Token</label>
+      <input id="fToken" type="password" placeholder="github_pat_…" autocomplete="off">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="loginCancel">Cancelar</button>
+      <button class="btn-delete hidden" id="logoutBtn">Sair</button>
+      <button class="btn-primary" id="loginSave">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  const PORPAGINA = 10;
+  const LS_KEY = 'estante-admin';
+
+  let livros = [];
+  let fileSha = null;           // sha atual de livros.json (só em modo admin)
+  let admin = null;             // { repo, token, branch }
+  let filtro = 'todos';
+  let termo = '';
+  let paginaAtual = 1;
+  let editId = null;
+  let statusSel = 'naolido';
+  let imagemNova = null;        // data URL de uma capa acabada de escolher
+  let imagemRemovida = false;
+  let imagemExistente = '';     // caminho da capa atual do livro em edição
+  const previewLocal = {};      // caminho -> data URL (para mostrar capas antes do GitHub Pages republicar)
+  let carregou = false;
+  let erroCarregar = '';
+
+  const $ = id => document.getElementById(id);
+  const grid = $('grid'), emptyEl = $('empty'), paginationEl = $('pagination');
+
+  /* ---------- utilidades ---------- */
+  const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const utf8ToB64 = s => btoa(unescape(encodeURIComponent(s)));
+  const b64ToUtf8 = b => decodeURIComponent(escape(atob(b.replace(/\s/g, ''))));
+  function slug(s) {
+    return (s || 'livro').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'livro';
+  }
+  function novoId(titulo) {
+    return slug(titulo).slice(0, 50) + '-' + Math.random().toString(36).slice(2, 6);
+  }
+  function lsGet() { try { return JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (e) { return null; } }
+  function lsSet(v) { try { v ? localStorage.setItem(LS_KEY, JSON.stringify(v)) : localStorage.removeItem(LS_KEY); } catch (e) {} }
+
+  let toastTimer;
+  function toast(msg, isError) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.toggle('error', !!isError);
+    t.classList.remove('hidden');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.add('hidden'), isError ? 6000 : 2500);
+  }
+
+  function repoAutomatico() {
+    const host = location.hostname;
+    if (!host.endsWith('.github.io')) return '';
+    const owner = host.split('.')[0];
+    const first = location.pathname.split('/').filter(Boolean)[0];
+    const repo = (first && !first.includes('.')) ? first : owner + '.github.io';
+    return owner + '/' + repo;
+  }
+
+  /* ---------- API do GitHub ---------- */
+  async function gh(method, path, body) {
+    const res = await fetch('https://api.github.com/repos/' + admin.repo + path, {
+      method,
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': 'Bearer ' + admin.token,
+        'X-GitHub-Api-Version': '2022-11-28',
+        ...(body ? { 'Content-Type': 'application/json' } : {})
+      },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (!res.ok) {
+      let msg = res.status + '';
+      try { msg = (await res.json()).message || msg; } catch (e) {}
+      const err = new Error(msg);
+      err.status = res.status;
+      throw err;
+    }
+    return res.status === 204 ? null : res.json();
+  }
+
+  async function ghLerLivros() {
+    const info = await gh('GET', '/contents/livros.json' + (admin.branch ? '?ref=' + encodeURIComponent(admin.branch) : ''));
+    fileSha = info.sha;
+    const dados = JSON.parse(b64ToUtf8(info.content));
+    return Array.isArray(dados) ? dados : [];
+  }
+
+  async function ghGuardarLivros(mensagem) {
+    const corpo = {
+      message: mensagem,
+      content: utf8ToB64(JSON.stringify(livros, null, 2) + '\n'),
+      sha: fileSha
+    };
+    if (admin.branch) corpo.branch = admin.branch;
+    const r = await gh('PUT', '/contents/livros.json', corpo);
+    fileSha = r.content.sha;
+  }
+
+  async function ghEnviarCapa(caminho, dataUrl) {
+    const b64 = dataUrl.split(',')[1];
+    let sha;
+    try {
+      const ex = await gh('GET', '/contents/' + caminho + (admin.branch ? '?ref=' + encodeURIComponent(admin.branch) : ''));
+      sha = ex.sha;
+    } catch (e) { if (e.status !== 404) throw e; }
+    const corpo = { message: 'Capa: ' + caminho, content: b64 };
+    if (sha) corpo.sha = sha;
+    if (admin.branch) corpo.branch = admin.branch;
+    await gh('PUT', '/contents/' + caminho, corpo);
+  }
+
+  async function ghApagarCapa(caminho) {
+    if (!caminho || !caminho.startsWith('capas/')) return;
+    try {
+      const ex = await gh('GET', '/contents/' + caminho + (admin.branch ? '?ref=' + encodeURIComponent(admin.branch) : ''));
+      const corpo = { message: 'Remover capa: ' + caminho, sha: ex.sha };
+      if (admin.branch) corpo.branch = admin.branch;
+      await gh('DELETE', '/contents/' + caminho, corpo);
+    } catch (e) { /* melhor esforço */ }
+  }
+
+  /* ---------- carregar dados ---------- */
+  async function carregarPublico() {
+    try {
+      const res = await fetch('livros.json?v=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const dados = await res.json();
+      livros = Array.isArray(dados) ? dados : [];
+      erroCarregar = '';
+    } catch (e) {
+      erroCarregar = 'Não foi possível carregar a lista de livros.';
+      livros = [];
+    }
+    carregou = true;
+    render();
+  }
+
+  async function carregarAdmin() {
+    try {
+      livros = await ghLerLivros();
+      erroCarregar = '';
+    } catch (e) {
+      if (e.status === 401 || e.status === 403 || e.status === 404) {
+        toast('Token ou repositório inválido (' + e.message + '). Entra de novo.', true);
+        sair(true);
+        return;
+      }
+      erroCarregar = 'Não foi possível carregar os livros do GitHub: ' + e.message;
+    }
+    carregou = true;
+    render();
+  }
+
+  /* ---------- render ---------- */
+  function capaSrc(l) { return previewLocal[l.imagem] || l.imagem; }
+
+  function render() {
+    $('adminBadge').classList.toggle('hidden', !admin);
+    $('openAdd').classList.toggle('hidden', !admin);
+    $('adminToggle').textContent = admin ? 'Definições de admin' : 'Admin';
+
+    grid.innerHTML = '';
+    paginationEl.innerHTML = '';
+
+    if (!carregou || erroCarregar) {
+      emptyEl.classList.remove('hidden');
+      emptyEl.firstElementChild.textContent = erroCarregar || 'A carregar…';
+      return;
+    }
+
+    const t = termo.toLowerCase();
+    const lista = livros.filter(l => {
+      if (filtro === 'lido' && l.estado !== 'lido') return false;
+      if (filtro === 'naolido' && l.estado === 'lido') return false;
+      if (t && !(l.titulo || '').toLowerCase().includes(t) && !(l.autor || '').toLowerCase().includes(t)) return false;
+      return true;
+    });
+
+    emptyEl.classList.toggle('hidden', lista.length > 0);
+    emptyEl.firstElementChild.textContent = livros.length ? 'Nenhum livro encontrado.' : 'Ainda não há livros aqui.';
+
+    const totalPaginas = Math.max(1, Math.ceil(lista.length / PORPAGINA));
+    paginaAtual = Math.min(Math.max(1, paginaAtual), totalPaginas);
+    const inicio = (paginaAtual - 1) * PORPAGINA;
+
+    lista.slice(inicio, inicio + PORPAGINA).forEach(l => {
+      const lido = l.estado === 'lido';
+      const el = document.createElement('div');
+      el.className = 'book';
+      const interior = l.imagem
+        ? `<img src="${escHtml(capaSrc(l))}" alt="Capa de ${escHtml(l.titulo)}" loading="lazy" data-title="${escHtml(l.titulo)}">`
+        : `<div class="fallback">${escHtml(l.titulo)}</div>`;
+      el.innerHTML = `
+        <div class="cover ${lido ? 'lido' : ''}">
+          ${interior}
+          <div class="status-dot ${lido ? 'lido' : ''}"></div>
+        </div>
+        <h3>${escHtml(l.titulo)}</h3>
+        <p class="autor">${escHtml(l.autor)}</p>
+        ${admin ? `<div class="book-actions">
+          <button class="toggle ${lido ? 'lido' : ''}" data-id="${escHtml(l.id)}" data-act="toggle">${lido ? 'Lido' : 'Marcar lido'}</button>
+          <button data-id="${escHtml(l.id)}" data-act="edit">Editar</button>
+        </div>` : `<p class="autor" style="margin:0">${lido ? 'Lido' : 'Por ler'}</p>`}
+      `;
+      grid.appendChild(el);
+    });
+
+    renderPaginacao(totalPaginas);
+  }
+
+  // capa que falha a carregar → mostra o título
+  grid.addEventListener('error', e => {
+    const img = e.target;
+    if (img.tagName !== 'IMG') return;
+    const div = document.createElement('div');
+    div.className = 'fallback';
+    div.textContent = img.dataset.title || '';
+    img.replaceWith(div);
+  }, true);
+
+  function renderPaginacao(total) {
+    if (total <= 1) return;
+    const btn = (label, pagina, o = {}) => {
+      const b = document.createElement('button');
+      b.textContent = label;
+      if (o.active) b.classList.add('active');
+      if (o.disabled) b.disabled = true;
+      b.addEventListener('click', () => { paginaAtual = pagina; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+      return b;
+    };
+    paginationEl.appendChild(btn('‹', paginaAtual - 1, { disabled: paginaAtual === 1 }));
+    const paginas = [...new Set([1, total, paginaAtual - 1, paginaAtual, paginaAtual + 1])]
+      .filter(p => p >= 1 && p <= total).sort((a, b) => a - b);
+    let anterior = 0;
+    paginas.forEach(p => {
+      if (p - anterior > 1) {
+        const s = document.createElement('span');
+        s.className = 'dots'; s.textContent = '…';
+        paginationEl.appendChild(s);
+      }
+      paginationEl.appendChild(btn(String(p), p, { active: p === paginaAtual }));
+      anterior = p;
+    });
+    paginationEl.appendChild(btn('›', paginaAtual + 1, { disabled: paginaAtual === total }));
+  }
+
+  /* ---------- filtros e pesquisa ---------- */
+  document.querySelectorAll('.filters button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.filters button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    filtro = b.dataset.f; paginaAtual = 1; render();
+  }));
+  $('search').addEventListener('input', e => { termo = e.target.value; paginaAtual = 1; render(); });
+
+  /* ---------- ações nos cartões (admin) ---------- */
+  grid.addEventListener('click', async e => {
+    const btn = e.target.closest('button');
+    if (!btn || !admin) return;
+    const livro = livros.find(l => l.id === btn.dataset.id);
+    if (!livro) return;
+    if (btn.dataset.act === 'edit') return abrirModal(livro);
+    if (btn.dataset.act === 'toggle') {
+      const antigo = livro.estado;
+      livro.estado = antigo === 'lido' ? 'naolido' : 'lido';
+      render();
+      try {
+        await ghGuardarLivros((livro.estado === 'lido' ? 'Lido: ' : 'Por ler: ') + livro.titulo);
+      } catch (err) {
+        livro.estado = antigo; render();
+        falhaGuardar(err);
+      }
+    }
+  });
+
+  function falhaGuardar(err) {
+    if (err.status === 409 || err.status === 422) {
+      toast('A lista mudou noutro sítio. A recarregar — repete a alteração.', true);
+      carregarAdmin();
+    } else {
+      toast('Não foi possível guardar: ' + err.message, true);
+    }
+  }
+
+  /* ---------- modal de livro ---------- */
+  function atualizarToggle() {
+    $('btnNaoLido').classList.toggle('sel', statusSel === 'naolido');
+    $('btnLido').classList.toggle('sel', statusSel === 'lido');
+  }
+  function mostrarPreview() {
+    const src = imagemNova || (!imagemRemovida && imagemExistente ? (previewLocal[imagemExistente] || imagemExistente) : '');
+    const box = $('uploadPreview');
+    if (src) {
+      box.innerHTML = '';
+      const img = document.createElement('img'); img.src = src; img.alt = '';
+      box.appendChild(img);
+    } else {
+      box.textContent = 'Sem imagem';
+    }
+    $('removeImgBtn').classList.toggle('hidden', !src);
+  }
+  function abrirModal(livro) {
+    editId = livro ? livro.id : null;
+    $('modalTitle').textContent = livro ? 'Editar livro' : 'Adicionar livro';
+    $('fTitulo').value = livro ? livro.titulo : '';
+    $('fAutor').value = livro ? livro.autor : '';
+    $('fImagemFile').value = '';
+    imagemNova = null; imagemRemovida = false;
+    imagemExistente = livro ? (livro.imagem || '') : '';
+    mostrarPreview();
+    statusSel = livro ? livro.estado : 'naolido';
+    atualizarToggle();
+    $('deleteBtn').classList.toggle('hidden', !livro);
+    $('modalBg').classList.add('open');
+    $('fTitulo').focus();
+  }
+  const fecharModal = () => $('modalBg').classList.remove('open');
+
+  $('openAdd').addEventListener('click', () => admin && abrirModal(null));
+  $('cancelBtn').addEventListener('click', fecharModal);
+  $('modalBg').addEventListener('click', e => { if (e.target === $('modalBg')) fecharModal(); });
+  $('btnNaoLido').addEventListener('click', () => { statusSel = 'naolido'; atualizarToggle(); });
+  $('btnLido').addEventListener('click', () => { statusSel = 'lido'; atualizarToggle(); });
+
+  // redimensionar a capa no navegador (≈400px de largura, JPEG)
+  $('fImagemFile').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const escala = Math.min(1, 400 / img.width);
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * escala);
+        c.height = Math.round(img.height * escala);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        imagemNova = c.toDataURL('image/jpeg', 0.82);
+        imagemRemovida = false;
+        mostrarPreview();
+      };
+      img.onerror = () => toast('Não foi possível ler essa imagem.', true);
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  $('removeImgBtn').addEventListener('click', () => {
+    imagemNova = null; imagemRemovida = true;
+    $('fImagemFile').value = '';
+    mostrarPreview();
+  });
+
+  $('saveBtn').addEventListener('click', async () => {
+    if (!admin) return;
+    const titulo = $('fTitulo').value.trim();
+    const autor = $('fAutor').value.trim();
+    if (!titulo) { $('fTitulo').focus(); return; }
+
+    const saveBtn = $('saveBtn');
+    saveBtn.disabled = true; saveBtn.textContent = 'A guardar…';
+
+    const antes = JSON.stringify(livros);
+    try {
+      const id = editId || novoId(titulo);
+      let imagem = editId ? (imagemExistente) : '';
+      let capaAntiga = '';
+
+      if (imagemNova) {
+        capaAntiga = imagem;
+        imagem = 'capas/' + id + '-' + Date.now().toString(36) + '.jpg';
+        await ghEnviarCapa(imagem, imagemNova);
+        previewLocal[imagem] = imagemNova;
+      } else if (imagemRemovida) {
+        capaAntiga = imagem;
+        imagem = '';
+      }
+
+      if (editId) {
+        const l = livros.find(x => x.id === editId);
+        Object.assign(l, { titulo, autor, imagem, estado: statusSel });
+      } else {
+        livros.unshift({ id, titulo, autor, estado: statusSel, imagem });
+      }
+
+      await ghGuardarLivros((editId ? 'Editar: ' : 'Adicionar: ') + titulo);
+      if (capaAntiga) ghApagarCapa(capaAntiga);
+      fecharModal();
+      render();
+      toast('Guardado. O site público atualiza em cerca de um minuto.');
+    } catch (err) {
+      livros = JSON.parse(antes);
+      render();
+      falhaGuardar(err);
+    }
+    saveBtn.disabled = false; saveBtn.textContent = 'Guardar';
+  });
+
+  $('deleteBtn').addEventListener('click', async () => {
+    if (!admin || !editId) return;
+    const l = livros.find(x => x.id === editId);
+    if (!l || !confirm('Eliminar "' + l.titulo + '"? Não dá para desfazer pelo site.')) return;
+    const antes = JSON.stringify(livros);
+    try {
+      livros = livros.filter(x => x.id !== editId);
+      await ghGuardarLivros('Eliminar: ' + l.titulo);
+      ghApagarCapa(l.imagem);
+      fecharModal();
+      render();
+      toast('Livro eliminado.');
+    } catch (err) {
+      livros = JSON.parse(antes);
+      render();
+      falhaGuardar(err);
+    }
+  });
+
+  /* ---------- login de admin ---------- */
+  function abrirLogin() {
+    const guardado = lsGet();
+    $('fRepo').value = (guardado && guardado.repo) || repoAutomatico();
+    $('fToken').value = '';
+    $('logoutBtn').classList.toggle('hidden', !admin);
+    $('loginBg').classList.add('open');
+    (admin ? $('fToken') : ($('fRepo').value ? $('fToken') : $('fRepo'))).focus();
+  }
+  const fecharLogin = () => $('loginBg').classList.remove('open');
+
+  $('adminToggle').addEventListener('click', abrirLogin);
+  $('loginCancel').addEventListener('click', fecharLogin);
+  $('loginBg').addEventListener('click', e => { if (e.target === $('loginBg')) fecharLogin(); });
+
+  function sair(silencioso) {
+    lsSet(null);
+    admin = null; fileSha = null;
+    fecharLogin();
+    if (!silencioso) toast('Sessão de admin terminada.');
+    carregou = false; render();
+    carregarPublico();
+  }
+  $('logoutBtn').addEventListener('click', () => sair(false));
+
+  $('loginSave').addEventListener('click', async () => {
+    const repo = $('fRepo').value.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '').replace(/\/$/, '');
+    const guardado = lsGet();
+    const token = $('fToken').value.trim() || (guardado && guardado.repo === repo ? guardado.token : '');
+    if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { toast('Indica o repositório como dono/nome.', true); return; }
+    if (!token) { toast('Cola o token do GitHub.', true); return; }
+
+    const b = $('loginSave');
+    b.disabled = true; b.textContent = 'A verificar…';
+    try {
+      const tentativa = { repo, token, branch: '' };
+      admin = tentativa;
+      const info = await gh('GET', '');
+      if (info.permissions && info.permissions.push === false) throw new Error('o token não tem permissão de escrita');
+      admin.branch = info.default_branch || '';
+      lsSet({ repo, token, branch: admin.branch });
+      fecharLogin();
+      carregou = false; render();
+      await carregarAdmin();
+      if (admin) toast('Modo admin ativo.');
+    } catch (err) {
+      admin = null;
+      toast('Não foi possível entrar: ' + err.message, true);
+    }
+    b.disabled = false; b.textContent = 'Entrar';
+  });
+
+  /* ---------- arranque ---------- */
+  const guardado = lsGet();
+  if (guardado && guardado.repo && guardado.token) {
+    admin = { repo: guardado.repo, token: guardado.token, branch: guardado.branch || '' };
+    render();
+    carregarAdmin();
+  } else {
+    render();
+    carregarPublico();
+  }
+})();
+</script>
+</body>
+</html>

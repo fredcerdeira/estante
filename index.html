@@ -99,7 +99,7 @@
     font-family: inherit;
     font-size: 14px;
   }
-  .filters { display: flex; gap: 6px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; }
   .filters button {
     border: 1px solid var(--line);
     background: transparent;
@@ -169,6 +169,9 @@
     border: 2px solid var(--panel);
   }
   .status-dot.lido { background: var(--green); }
+  .cover.acomprar { border: 2px dashed var(--brass); }
+  .cover.acomprar img { opacity: 0.75; }
+  .status-dot.acomprar { background: var(--brass); }
   .book h3 {
     font-family: 'Fraunces', serif;
     font-weight: 600;
@@ -190,6 +193,7 @@
     cursor: pointer;
   }
   .book-actions button.toggle.lido { border-color: var(--green); color: var(--green); }
+  .book-actions button.toggle.acomprar { border-color: var(--brass); color: var(--brass); }
   .book-actions button.del:hover { border-color: var(--danger); color: var(--danger); }
 
   .pagination {
@@ -352,6 +356,7 @@
       <button class="active" data-f="todos">Todos</button>
       <button data-f="lido">Lidos</button>
       <button data-f="naolido">Não lidos</button>
+      <button data-f="acomprar">A comprar</button>
     </div>
     <button class="add-btn hidden" id="openAdd">+ Adicionar livro</button>
   </div>
@@ -393,6 +398,7 @@
       <div class="toggle-row">
         <button type="button" id="btnNaoLido" class="sel">Não lido</button>
         <button type="button" id="btnLido">Lido</button>
+        <button type="button" id="btnAComprar">A comprar</button>
       </div>
     </div>
     <div class="modal-actions">
@@ -599,7 +605,8 @@
     const t = termo.toLowerCase();
     const lista = livros.filter(l => {
       if (filtro === 'lido' && l.estado !== 'lido') return false;
-      if (filtro === 'naolido' && l.estado === 'lido') return false;
+      if (filtro === 'naolido' && (l.estado === 'lido' || l.estado === 'acomprar')) return false;
+      if (filtro === 'acomprar' && l.estado !== 'acomprar') return false;
       if (t && !(l.titulo || '').toLowerCase().includes(t) && !(l.autor || '').toLowerCase().includes(t)) return false;
       return true;
     });
@@ -613,22 +620,23 @@
 
     lista.slice(inicio, inicio + PORPAGINA).forEach(l => {
       const lido = l.estado === 'lido';
+      const acomprar = l.estado === 'acomprar';
       const el = document.createElement('div');
       el.className = 'book';
       const interior = l.imagem
         ? `<img src="${escHtml(capaSrc(l))}" alt="Capa de ${escHtml(l.titulo)}" loading="lazy" referrerpolicy="no-referrer" data-title="${escHtml(l.titulo)}">`
         : `<div class="fallback">${escHtml(l.titulo)}</div>`;
       el.innerHTML = `
-        <div class="cover ${lido ? 'lido' : ''}">
+        <div class="cover ${lido ? 'lido' : acomprar ? 'acomprar' : ''}">
           ${interior}
-          <div class="status-dot ${lido ? 'lido' : ''}"></div>
+          <div class="status-dot ${lido ? 'lido' : acomprar ? 'acomprar' : ''}"></div>
         </div>
         <h3>${escHtml(l.titulo)}</h3>
         <p class="autor">${escHtml(l.autor)}</p>
         ${admin ? `<div class="book-actions">
-          <button class="toggle ${lido ? 'lido' : ''}" data-id="${escHtml(l.id)}" data-act="toggle">${lido ? 'Lido' : 'Marcar lido'}</button>
+          <button class="toggle ${lido ? 'lido' : acomprar ? 'acomprar' : ''}" data-id="${escHtml(l.id)}" data-act="toggle">${lido ? 'Lido' : acomprar ? 'Marcar comprado' : 'Marcar lido'}</button>
           <button data-id="${escHtml(l.id)}" data-act="edit">Editar</button>
-        </div>` : `<p class="autor" style="margin:0">${lido ? 'Lido' : 'Por ler'}</p>`}
+        </div>` : `<p class="autor" style="margin:0">${lido ? 'Lido' : acomprar ? 'A comprar' : 'Por ler'}</p>`}
       `;
       grid.appendChild(el);
     });
@@ -689,10 +697,10 @@
     if (btn.dataset.act === 'edit') return abrirModal(livro);
     if (btn.dataset.act === 'toggle') {
       const antigo = livro.estado;
-      livro.estado = antigo === 'lido' ? 'naolido' : 'lido';
+      livro.estado = antigo === 'naolido' ? 'lido' : antigo === 'lido' ? 'naolido' : 'naolido';
       render();
       try {
-        await ghGuardarLivros((livro.estado === 'lido' ? 'Lido: ' : 'Por ler: ') + livro.titulo);
+        await ghGuardarLivros((livro.estado === 'lido' ? 'Lido: ' : antigo === 'acomprar' ? 'Comprado: ' : 'Por ler: ') + livro.titulo);
       } catch (err) {
         livro.estado = antigo; render();
         falhaGuardar(err);
@@ -713,6 +721,7 @@
   function atualizarToggle() {
     $('btnNaoLido').classList.toggle('sel', statusSel === 'naolido');
     $('btnLido').classList.toggle('sel', statusSel === 'lido');
+    $('btnAComprar').classList.toggle('sel', statusSel === 'acomprar');
   }
   function mostrarPreview() {
     const src = imagemNova || (!imagemRemovida && imagemExistente ? (previewLocal[imagemExistente] || imagemExistente) : '');
@@ -748,6 +757,7 @@
   $('modalBg').addEventListener('click', e => { if (e.target === $('modalBg')) fecharModal(); });
   $('btnNaoLido').addEventListener('click', () => { statusSel = 'naolido'; atualizarToggle(); });
   $('btnLido').addEventListener('click', () => { statusSel = 'lido'; atualizarToggle(); });
+  $('btnAComprar').addEventListener('click', () => { statusSel = 'acomprar'; atualizarToggle(); });
 
   // redimensionar a capa no navegador (≈400px de largura, JPEG)
   $('fImagemFile').addEventListener('change', e => {
